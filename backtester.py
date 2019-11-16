@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class Strategy:
+class Strategy(object):
 	"""
 	Strategy is an abstract base class providing an interface for
     all subsequent (inherited) trading strategies.
@@ -11,6 +11,7 @@ class Strategy:
 
     In this instance only a single symbol/instrument is supported.
 	"""
+
 	___metaclass__ = ABCMeta
 
 	@abstractmethod
@@ -22,12 +23,13 @@ class Strategy:
 		raise NotImplementedError("Should implement generate_signals()")
 
 
-class Portfolio:
+class Portfolio(object):
 	"""
 	An abstract base class representing a portfolio of
     positions (including both instruments and cash), determined
     on the basis of a set of signals provided by a Strategy.
 	"""
+
 	__metaclass__ = ABCMeta
 
 	@abstractmethod

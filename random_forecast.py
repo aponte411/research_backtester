@@ -10,9 +10,7 @@ os.chdir('/Users/davidaponte/TRADING/research-backtester/research_backtester')
 class RandomForecastStrategy(Strategy):
     """
     Derives from Strategy to produce a set of signals that
-    are randomly generated long/shorts. Clearly a nonsensical
-    strategy, but perfectly acceptable for demonstrating the
-    backtesting infrastructure!
+    are randomly generated long/shorts.
     """
 
     def __init__(self, ticker, bars):
@@ -79,7 +77,8 @@ class MarketOpenPortfolio(Portfolio):
         each position per bar), in order to generate an equity curve
         ('total') and a set of bar-based returns ('returns').
 
-        Returns the portfolio object to be used elsewhere."""
+        Returns the portfolio object to be used elsewhere.
+        """
 
         portfolio = self.positions*self.bars['Open']
         pos_diff = self.positions.diff()
@@ -113,4 +112,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
