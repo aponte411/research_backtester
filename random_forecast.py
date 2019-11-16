@@ -21,7 +21,7 @@ class RandomForecastStrategy(Strategy):
         self.ticker
         self.bars
 
-    def generate_signals(self, tickers, bars):
+    def generate_signals(self, ticker, bars):
         """
         Creates a pandas DataFrame of random signals
         from a Normal distribution.
@@ -73,8 +73,8 @@ class MarketOpenPortfolio(Portfolio):
         return portfolio
 
 
-def generate_stock_data(stock='GOOG/NYSE_SPY', collapse='daily'):
-    ticker = stock.split('_')[1]
+def generate_stock_data(stock='WIKI/AAPL', collapse='daily'):
+    ticker = stock.split('/')[1]
     bars = quandl.get(stock, collapse=collapse)
     return ticker, bars
 
