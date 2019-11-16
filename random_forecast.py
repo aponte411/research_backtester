@@ -1,13 +1,10 @@
 from backtester import Strategy, Portfolio
-import os
-
-os.chdir('/Users/davidaponte/TRADING/research-backtester/research_backtester')
-os.getcwd()
-
 import numpy as np
 import quandl
 import pandas as pd
 import scipy.stats as ss
+import os
+os.chdir('/Users/davidaponte/TRADING/research-backtester/research_backtester')
 
 
 class RandomForecastStrategy(Strategy):
@@ -17,23 +14,43 @@ class RandomForecastStrategy(Strategy):
     strategy, but perfectly acceptable for demonstrating the
     backtesting infrastructure!
     """
-    def __init__(self, ticker, bars):
-        self.ticker
-        self.bars
 
-    def generate_signals(self, ticker, bars):
+    def __init__(self, ticker, bars):
+        self.ticker = ticker
+        self.bars = bars
+
+    def generate_signals(self):
         """
         Creates a pandas DataFrame of random signals
-        from a Normal distribution.
+        from a normal distribution.
         """
+
         signals = pd.DataFrame(index=self.bars.index)
         signals['signal'] = np.sign(ss.norm.rvs(size=len(signals)))
         signals['signal'][:5] = 0 # to offset upstream NaN errors
         return signals
 
-class MarketOpenPortfolio(Portfolio):
 
-    def __init__(self, ticker, bars, signals, initial_capital=100000.0):
+class MarketOpenPortfolio(Portfolio):
+    """
+    Inherits Portfolio to create a system that purchases 100 units of
+    a particular symbol upon a long/short signal, assuming the market
+    open price of a bar.
+
+    In addition, there are zero transaction costs and cash can be immediately
+    borrowed for shorting (no margin posting or interest requirements).
+
+    :symbol - A stock symbol which forms the basis of the portfolio.
+    :bars - A DataFrame of bars for a symbol set.
+    :signals - A pandas DataFrame of signals (1, 0, -1) for each symbol.
+    :initial_capital - The amount in cash at the start of the portfolio.
+    """
+
+    def __init__(self,
+                 ticker,
+                 bars,
+                 signals,
+                 initial_capital=100000.0):
         self.ticker = ticker
         self.bars = bars
         self.signals = signals
@@ -46,8 +63,10 @@ class MarketOpenPortfolio(Portfolio):
         100 of the particular symbol based on the forecast signals of
         {1, 0, -1} from the signals DataFrame.
         """
-        positions = pd.DataFrame(index=self.signals.index).fillna(0.)
+
+        positions = pd.DataFrame(index=self.signals.index).fillna(0.0)
         positions[self.ticker] = 100*self.signals['signal']
+
         return positions
 
     def backtest_portfolio(self):
@@ -69,13 +88,17 @@ class MarketOpenPortfolio(Portfolio):
         portfolio['cash'] = self.initial_capital - (pos_diff*self.bars['Open']).sum(axis=1).cumsum()
 
         portfolio['total'] = portfolio['cash'] + portfolio['holdings']
-        portfolio['returns'] = portfolio['total'].pct_chg()
+        portfolio['returns'] = portfolio['total'].pct_change()
+
         return portfolio
 
 
 def generate_stock_data(stock='WIKI/AAPL', collapse='daily'):
+    """Return stock ticker and bars"""
+
     ticker = stock.split('/')[1]
     bars = quandl.get(stock, collapse=collapse)
+
     return ticker, bars
 
 
@@ -87,5 +110,7 @@ def main():
     returns = portfolio.backtest_portfolio()
     print(returns.tail(10))
 
+
 if __name__ == '__main__':
     main()
+    
