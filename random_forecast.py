@@ -95,11 +95,17 @@ class MarketOpenPortfolio(Portfolio):
         return portfolio
 
 
-def generate_stock_data(stock='WIKI/AAPL', collapse='daily') -> Tuple[str, pd.DataFrame]:
+def generate_stock_data(stock: str,
+                        collapse: str,
+                        start: str,
+                        end: str) -> Tuple[str, pd.DataFrame]:
     """Return stock ticker and bars"""
 
     ticker = stock.split('/')[1]
-    bars = quandl.get(stock, collapse=collapse)
+    bars = quandl.get(stock,
+                      collapse=collapse,
+                      start_date=start,
+                      end_date=end)
 
     return ticker, bars
 
@@ -107,12 +113,19 @@ def generate_stock_data(stock='WIKI/AAPL', collapse='daily') -> Tuple[str, pd.Da
 @click.command()
 @click.option('-stk', '--stock', type=str, default='WIKI/AAPL')
 @click.option('-clp', '--collapse', type=str, default='daily')
+@click.option('-sd', '--start', type=str, default='2006-10-01')
+@click.option('-ed', '--end', type=str, default='2018-10-01')
 @click.option('-icap', '--initial-capital', type=float, default=100000.0)
 def main(stock: str,
          collapse: str,
-         initial_capital: float) -> Any:
+         initial_capital: float,
+         start: str,
+         end: str) -> Any:
 
-    ticker, bars = generate_stock_data(stock=stock, collapse=collapse)
+    ticker, bars = generate_stock_data(stock=stock,
+                                       collapse=collapse,
+                                       start=start,
+                                       end=end)
     strategy = RandomForecastStrategy(ticker, bars)
     signals = strategy.generate_signals()
     portfolio = MarketOpenPortfolio(ticker, bars, signals, initial_capital=initial_capital)
