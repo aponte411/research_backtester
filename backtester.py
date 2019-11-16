@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from typing import Any
 
 
 class Strategy(object):
@@ -15,11 +16,12 @@ class Strategy(object):
 	___metaclass__ = ABCMeta
 
 	@abstractmethod
-	def generate_signals(self):
+	def generate_signals(self) -> Any:
 		"""
 		An implementation is required to return the DataFrame of symbols
         containing the signals to go long, short or hold (1, -1 or 0).
 		"""
+
 		raise NotImplementedError("Should implement generate_signals()")
 
 
@@ -33,12 +35,13 @@ class Portfolio(object):
 	__metaclass__ = ABCMeta
 
 	@abstractmethod
-	def generate_positions(self):
+	def generate_positions(self) -> Any:
 		"""
 		Provides the logic to determine how the portfolio
         positions are allocated on the basis of forecasting
         signals and available cash.
 		"""
+
 		raise NotImplementedError("Should implement generate_positions()!")
 
 	@abstractmethod
@@ -52,4 +55,5 @@ class Portfolio(object):
         Produces a portfolio object that can be examined by
         other classes/functions.
 		"""
+
 		raise NotImplementedError("Should implement backtest_portfolio()!")

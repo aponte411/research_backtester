@@ -4,6 +4,8 @@ import quandl
 import pandas as pd
 import scipy.stats as ss
 import os
+from typing import Any, Tuple
+import click
 os.chdir('/Users/davidaponte/TRADING/research-backtester/research_backtester')
 
 
@@ -13,11 +15,11 @@ class RandomForecastStrategy(Strategy):
     are randomly generated long/shorts.
     """
 
-    def __init__(self, ticker, bars):
+    def __init__(self, ticker: str, bars: pd.DataFrame):
         self.ticker = ticker
         self.bars = bars
 
-    def generate_signals(self):
+    def generate_signals(self) -> pd.DataFrame:
         """
         Creates a pandas DataFrame of random signals
         from a normal distribution.
@@ -26,6 +28,7 @@ class RandomForecastStrategy(Strategy):
         signals = pd.DataFrame(index=self.bars.index)
         signals['signal'] = np.sign(ss.norm.rvs(size=len(signals)))
         signals['signal'][:5] = 0 # to offset upstream NaN errors
+
         return signals
 
 
@@ -45,17 +48,17 @@ class MarketOpenPortfolio(Portfolio):
     """
 
     def __init__(self,
-                 ticker,
-                 bars,
-                 signals,
-                 initial_capital=100000.0):
+                 ticker: str,
+                 bars: pd.DataFrame,
+                 signals: pd.DataFrame,
+                 initial_capital: float = 100000.0):
         self.ticker = ticker
         self.bars = bars
         self.signals = signals
         self.initial_capital = initial_capital
         self.positions = self.generate_positions()
 
-    def generate_positions(self):
+    def generate_positions(self) -> pd.DataFrame:
         """
         Creates a 'positions' DataFrame that simply longs or shorts
         100 of the particular symbol based on the forecast signals of
@@ -67,7 +70,7 @@ class MarketOpenPortfolio(Portfolio):
 
         return positions
 
-    def backtest_portfolio(self):
+    def backtest_portfolio(self) -> pd.DataFrame:
         """
         Constructs a portfolio from the positions DataFrame by
         assuming the ability to trade at the precise market open price
@@ -92,7 +95,7 @@ class MarketOpenPortfolio(Portfolio):
         return portfolio
 
 
-def generate_stock_data(stock='WIKI/AAPL', collapse='daily'):
+def generate_stock_data(stock='WIKI/AAPL', collapse='daily') -> Tuple[str, pd.DataFrame]:
     """Return stock ticker and bars"""
 
     ticker = stock.split('/')[1]
@@ -101,12 +104,22 @@ def generate_stock_data(stock='WIKI/AAPL', collapse='daily'):
     return ticker, bars
 
 
-def main():
-    ticker, bars = generate_stock_data()
+@click.command()
+@click.option('-stk', '--stock', type=str, default='WIKI/AAPL')
+@click.option('-clp', '--collapse', type=str, default='daily')
+@click.option('-icap', '--initial-capital', type=float, default=100000.0)
+def main(stock: str,
+         collapse: str,
+         initial_capital: float) -> Any:
+
+    ticker, bars = generate_stock_data(stock=stock, collapse=collapse)
     strategy = RandomForecastStrategy(ticker, bars)
     signals = strategy.generate_signals()
-    portfolio = MarketOpenPortfolio(ticker, bars, signals, initial_capital=100000.0)
+    portfolio = MarketOpenPortfolio(ticker, bars, signals, initial_capital=initial_capital)
     returns = portfolio.backtest_portfolio()
+
+    print(f'Final returns for {ticker}..')
+    print()
     print(returns.tail(10))
 
 
