@@ -40,15 +40,17 @@ class MovingAverageCrossStrategy(Strategy):
         signals = pd.DataFrame(index=self.bars.index)
         signals['signal'] = 0.0
 
-        signals['short_mavg'] = self.bars['Close'].rolling(window=self.short_window).mean()
-        signals['long_mavg'] = self.bars['Close'].rolling(window=self.long_window).mean()
+        signals['short_mavg'] = self.bars['Adj Close'].rolling(window=self.short_window,
+                                                               min_periods=1,
+                                                               center=False).mean()
+        signals['long_mavg'] = self.bars['Adj Close'].rolling(window=self.long_window,
+                                                              min_periods=1,
+                                                              center=False).mean()
 
         # Creates a 'signal' (invested or not invested) when the short moving average crosses the long
         # moving average, but only for the period greater than the shortest moving average window
         signals['signal'][self.short_window:] = np.where(signals['short_mavg'][self.short_window:] \
-            > signals['long_mavg'][self.short_window:],
-              1.0,
-              0.0)
+            > signals['long_mavg'][self.short_window:],1.0,0.0)
         signals['positions'] = signals['signal'].diff()
 
         return signals
@@ -85,7 +87,7 @@ class MarketOnClosePortfolio(Portfolio):
         """
 
         positions = pd.DataFrame(index=self.signals.index).fillna(0.0)
-        positions[self.ticker] = 100*self.signals['signal'] # buy 100 shares
+        positions[self.ticker] = 100*self.signals['signal'] # 100 shares
 
         return positions
 
@@ -102,11 +104,11 @@ class MarketOnClosePortfolio(Portfolio):
         Returns the portfolio object to be used elsewhere.
         """
 
-        portfolio = self.positions*self.bars['Close']
+        portfolio = self.positions*self.bars['Adj Close']
         pos_diff = self.positions.diff()
 
-        portfolio['holdings'] = (self.positions*self.bars['Close']).sum(axis=1)
-        portfolio['cash'] = self.initial_capital - (pos_diff*self.bars['Close']).sum(axis=1).cumsum()
+        portfolio['holdings'] = (self.positions*self.bars['Adj Close']).sum(axis=1)
+        portfolio['cash'] = self.initial_capital - (pos_diff*self.bars['Adj Close']).sum(axis=1).cumsum()
 
         portfolio['total'] = portfolio['cash'] + portfolio['holdings']
         portfolio['returns'] = portfolio['total'].pct_change()
@@ -119,6 +121,24 @@ def generate_stock_data(ticker: str,
                         start: str,
                         end: str) -> Tuple[str, pd.DataFrame]:
     """Return stock ticker and bars"""
+
+    # def process_dates(start, end) -> Tuple[datetime]:
+    #     """Convert date string into datetime objects"""
+    #
+    #     start = start.split('-')
+    #     start_list = list(map(int, start))
+    #     start_datetime = datetime.datetime(start_list[0],
+    #                                        start_list[1],
+    #                                        start_list[2])
+    #     end = end.split('-')
+    #     end_list = list(map(int, end))
+    #     end_datetime = datetime.datetime(end_list[0],
+    #                                      end_list[1],
+    #                                      end_list[2])
+    #     return start_datetime, end_datetime
+
+
+    # start, end = process_dates(start, end)
 
     bars = DataReader(ticker, source, start, end)
 
@@ -134,7 +154,7 @@ def plot_equity_curves(bars: pd.DataFrame,
     ax1 = fig.add_subplot(211,  ylabel='Price in $')
 
     # Plot the AAPL closing price overlaid with the moving averages
-    bars['Close'].plot(ax=ax1, color='r', lw=2.)
+    bars['Adj Close'].plot(ax=ax1, color='r', lw=2.)
     signals[['short_mavg', 'long_mavg']].plot(ax=ax1, lw=2.)
 
     # Plot the "buy" trades against AAPL
@@ -166,8 +186,8 @@ def plot_equity_curves(bars: pd.DataFrame,
 @click.command()
 @click.option('-tk', '--ticker', type=str, default='AAPL')
 @click.option('-so', '--source', type=str, default='yahoo')
-@click.option('-sd', '--start', type=str, default='1990-01-01')
-@click.option('-ed', '--end', type=str, default='2002-01-01')
+@click.option('-sd', '--start', type=str, default='1990-1-1')
+@click.option('-ed', '--end', type=str, default='2002-1-1')
 @click.option('-icap', '--initial-capital', type=float, default=100000.0)
 def main(ticker: str,
          source: str,

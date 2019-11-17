@@ -1,0 +1,5 @@
+1. https://www.datacamp.com/community/tutorials/finance-python-trading
+2. https://www.quantstart.com/articles/Research-Backtesting-Environments-in-Python-with-pandas
+
+
+
