@@ -167,23 +167,6 @@ def plot_equity_curves(bars: pd.DataFrame,
     # Plot the figure
     fig.show()
 
-# ticker, bars = generate_stock_data(ticker='AAPL',
-#                                    source='yahoo',
-#                                    start='1990-01-01',
-#                                    end='2002-01-01')
-# macs = MovingAverageCrossStrategy(ticker,
-#                                   bars,
-#                                   short_window=100,
-#                                   long_window=400)
-# signals = macs.generate_signals()
-#
-# portfolio = MarketOnClosePortfolio(ticker,
-#                                    bars,
-#                                    signals,
-#                                    initial_capital=100000.0)
-# returns = portfolio.backtest_portfolio()
-# returns
-# plot_equity_curves(bars, signals)
 
 @click.command()
 @click.option('-tk', '--ticker', type=str, default='AAPL')
