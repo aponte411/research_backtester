@@ -129,13 +129,8 @@ def plot_equity_curves(bars: pd.DataFrame,
                        signals: pd.DataFrame,
                        returns: pd.DataFrame) -> Any:
 
-    # fig, axes = fig.subplots(2, 1, figsize=(10,10))
-    #
-    # bars['Close'].plot(ax=axes[0], color='r', lw=2)
-    # signals[['short_mavg', 'long_mavg']].plot(ax=axes[1], lw=2)
-    # Plot two charts to assess trades and equity curve
     fig = plt.figure(figsize=(8,7))
-    fig.patch.set_facecolor('white')     # Set the outer colour to white
+    fig.patch.set_facecolor('white')
     ax1 = fig.add_subplot(211,  ylabel='Price in $')
 
     # Plot the AAPL closing price overlaid with the moving averages
