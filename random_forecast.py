@@ -1,8 +1,9 @@
 from backtester import Strategy, Portfolio
 import numpy as np
-import quandl
+from pandas_datareader import DataReader
 import pandas as pd
 import scipy.stats as ss
+
 import os
 from typing import Any, Tuple
 import click
@@ -95,35 +96,31 @@ class MarketOpenPortfolio(Portfolio):
         return portfolio
 
 
-def generate_stock_data(stock: str,
-                        collapse: str,
+def generate_stock_data(ticker: str,
+                        source: str,
                         start: str,
                         end: str) -> Tuple[str, pd.DataFrame]:
     """Return stock ticker and bars"""
 
-    ticker = stock.split('/')[1]
-    bars = quandl.get(stock,
-                      collapse=collapse,
-                      start_date=start,
-                      end_date=end)
+    bars = DataReader(ticker, source, start, end)
 
     return ticker, bars
 
 
 @click.command()
-@click.option('-stk', '--stock', type=str, default='WIKI/AAPL')
-@click.option('-clp', '--collapse', type=str, default='daily')
+@click.option('-tk', '--ticker', type=str, default='AAPL')
+@click.option('-so', '--source', type=str, default='yahoo')
 @click.option('-sd', '--start', type=str, default='2006-10-01')
 @click.option('-ed', '--end', type=str, default='2018-10-01')
 @click.option('-icap', '--initial-capital', type=float, default=100000.0)
-def main(stock: str,
-         collapse: str,
+def main(ticker: str,
+         source: str,
          initial_capital: float,
          start: str,
          end: str) -> Any:
 
-    ticker, bars = generate_stock_data(stock=stock,
-                                       collapse=collapse,
+    ticker, bars = generate_stock_data(ticker=ticker,
+                                       source=source,
                                        start=start,
                                        end=end)
     strategy = RandomForecastStrategy(ticker, bars)
