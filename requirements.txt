@@ -22,7 +22,7 @@ packaging==19.2
 pandas==0.25.1
 pluggy==0.13.0
 protobuf==3.10.0
-py==1.8.0
+py==1.10.0
 pyasn1==0.4.7
 pycparser==2.19
 pyOpenSSL==19.0.0
